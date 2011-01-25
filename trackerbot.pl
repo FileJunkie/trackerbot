@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use Encode;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
 
@@ -17,7 +18,7 @@ sub parse_russian_post{
 	my $req = POST 'http://info.russianpost.ru/servlet/post_item',
 		[ action => 'search', searchType => 'barCode', show_form => 'yes', barCode => $track ];
 
-	print $ua->request($req)->as_string;
+	print decode("CP1251", $ua->request($req)->as_string);
 }
 
 foreach my $track (@tracks){
