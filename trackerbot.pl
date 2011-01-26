@@ -7,6 +7,7 @@ use Encode;
 use HTML::TreeBuilder;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
+use Net::Jabber::Bot;
 use utf8;
 
 # Tracking numbers
@@ -27,7 +28,7 @@ sub parse_russian_post{
 	my @header = $tree->look_down("_tag", "p", "class", "page_TITLE");
 	# checking if tracking # is OK
 	if(!defined $header[1]){
-		print "$track Error parsing page: second header not found.\n";
+		#print "$track Error parsing page: second header not found.\n";
 		$tree->delete;
 		return undef;
 	}
@@ -35,7 +36,7 @@ sub parse_russian_post{
 
 	# checking if tracking # is OK
 	if($header_text !~ /РЕЗУЛЬТАТЫ ПОИСКА/){
-		print "$track Error parsing page: incorrent heading content. Maybe incorrect tracking number?\n";
+		#print "$track Error parsing page: incorrent heading content. Maybe incorrect tracking number?\n";
 		$tree->delete;
 		return undef;
 	}
@@ -61,8 +62,29 @@ sub parse_russian_post{
 	}
 	
 	$tree->delete;
+	
+	return @data;
 }
 
-foreach my $track (@tracks){
-	parse_russian_post($track);
-}
+# foreach my $track (@tracks){
+# 	parse_russian_post($track);
+# }
+
+sub new_bot_message{};
+sub background_checks{};
+my %forum_list;
+
+my $bot = Net::Jabber::Bot->new(
+	server => 'filejunkie.name',
+	conference_server => 'conference.filejunkie.name',
+	port => 5222,
+	username => 'parcelbot',
+	password => '',
+	safety_mode => 1,
+	message_function => \&new_bot_message,
+	background_function => \&background_checks,
+	forums_and_responses => \%forum_list ,
+);
+
+$bot->SendPersonalMessage('filejunkie@filejunkie.name', 'Oh hi');
+$bot->Disconnect;
