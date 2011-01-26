@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# Written by Ilya Ershov, filejunkie@gmail.com, http://github.com/FileJunkie/trackerbot/
+# Licensed under AGPL 3.0
+
 use strict;
 use warnings;
 
@@ -11,7 +14,7 @@ use Net::Jabber::Bot;
 use utf8;
 
 # Tracking numbers
-my @tracks = ("CJ216818892US");
+my @tracks = ("CJ216818892US", "RR881780782CN");
 
 binmode STDOUT, ":utf8";
 
@@ -38,7 +41,7 @@ sub parse_russian_post{
 	if($header_text !~ /РЕЗУЛЬТАТЫ ПОИСКА/){
 		#print "$track Error parsing page: incorrent heading content. Maybe incorrect tracking number?\n";
 		$tree->delete;
-		return undef;
+		return;
 	}
 	
 	# looking for results table
@@ -46,7 +49,7 @@ sub parse_russian_post{
 	if(@tables != 1){
 		print "$track Error parsing page: too much tables found.\n";
 		$tree->delete;
-		return undef;
+		return;
 	}
 	
 	# extracting data rows
@@ -84,13 +87,41 @@ my $bot = Net::Jabber::Bot->new(
 
 $bot->AddUser('filejunkie@filejunkie.name');
 
+my (@sent, $i);
+$i = 0;
 foreach my $track (@tracks){
+	$sent[$i] = 0;
+
 	my $message = "$track:\n";
  	foreach my $line (parse_russian_post($track)){
+ 		$sent[$i]++;
  		$message .= $line."\n";
  	}
  	chomp $message;
  	$bot->SendPersonalMessage('filejunkie@filejunkie.name', $message);
+ 	
+ 	$i++;
+}
+
+while(1){
+	sleep(5 * 60);
+	
+	$i = 0;
+	foreach my $track (@tracks){
+		my @data = parse_russian_post($track);
+		if(scalar(@data) > $sent[$i]){
+			my $message = "$track new line:\n";
+			for(my $j = $sent[$i]; $j < scalar(@data); $j++){
+				$sent[$i]++;
+ 				$message .= $data[$j]."\n";
+			}
+			chomp $message;
+ 			$bot->SendPersonalMessage('filejunkie@filejunkie.name', $message);
+		}
+	
+		$i++;
+	}
+	
 }
 
 $bot->Disconnect;
