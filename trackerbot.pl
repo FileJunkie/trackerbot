@@ -66,10 +66,6 @@ sub parse_russian_post{
 	return @data;
 }
 
-# foreach my $track (@tracks){
-# 	parse_russian_post($track);
-# }
-
 sub new_bot_message{};
 sub background_checks{};
 my %forum_list;
@@ -86,5 +82,15 @@ my $bot = Net::Jabber::Bot->new(
 	forums_and_responses => \%forum_list ,
 );
 
-$bot->SendPersonalMessage('filejunkie@filejunkie.name', 'Oh hi');
+$bot->AddUser('filejunkie@filejunkie.name');
+
+foreach my $track (@tracks){
+	my $message = "$track:\n";
+ 	foreach my $line (parse_russian_post($track)){
+ 		$message .= $line."\n";
+ 	}
+ 	chomp $message;
+ 	$bot->SendPersonalMessage('filejunkie@filejunkie.name', $message);
+}
+
 $bot->Disconnect;
