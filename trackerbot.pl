@@ -7,6 +7,7 @@ use Encode;
 use HTML::TreeBuilder;
 use HTTP::Request::Common qw(POST);
 use LWP::UserAgent;
+use utf8;
 
 # Tracking numbers
 my @tracks = ("CJ216818892US");
@@ -24,12 +25,14 @@ sub parse_russian_post{
 	$tree->parse(decode("CP1251", $ua->request($req)->as_string));
 	
 	my @header = $tree->look_down("_tag", "p", "class", "page_TITLE");
-	my $header_text = $header[1]->as_text;
-	if($header_text !~ /РЕЗУЛЬТАТЫ ПОИСКА/){
-		print "Ok\n";
+	if(!defined $header[1]){
+		print "Error parsing page: second header not found.\n";
+		return;
 	}
-	else{
-		print "Fail\n";
+	my $header_text = $header[1]->as_text;
+
+	if($header_text !~ /РЕЗУЛЬТАТЫ ПОИСКА/){
+		print "Error parsing page: incorrent heading content. Maybe incorrect tracking number?\n";
 	}
 	
 	$tree->delete;
