@@ -70,8 +70,8 @@ sub parse_russian_post{
 }
 
 sub new_bot_message{};
-sub background_checks{};
-my %forum_list;
+
+my %forum_list = ();
 
 my $bot = Net::Jabber::Bot->new(
 	server => 'filejunkie.name',
@@ -79,32 +79,36 @@ my $bot = Net::Jabber::Bot->new(
 	port => 5222,
 	username => 'parcelbot',
 	password => '',
+	alias => 'parcelbot',
 	safety_mode => 1,
+	loop_sleep_time => 60,
 	message_function => \&new_bot_message,
-	background_function => \&background_checks,
+	background_function => \&work,
 	forums_and_responses => \%forum_list ,
 );
 
 $bot->AddUser('filejunkie@filejunkie.name');
-
 my (@sent, $i);
-$i = 0;
-foreach my $track (@tracks){
-	$sent[$i] = 0;
 
-	my $message = "$track:\n";
- 	foreach my $line (parse_russian_post($track)){
- 		$sent[$i]++;
- 		$message .= $line."\n";
- 	}
- 	chomp $message;
- 	$bot->SendPersonalMessage('filejunkie@filejunkie.name', $message);
- 	
- 	$i++;
+sub init{
+	$i = 0;
+	foreach my $track (@tracks){
+		$sent[$i] = 0;
+	
+		my $message = "$track:\n";
+		foreach my $line (parse_russian_post($track)){
+			$sent[$i]++;
+			$message .= $line."\n";
+		}
+		chomp $message;
+		$bot->SendPersonalMessage('filejunkie@filejunkie.name', $message);
+		
+		$i++;
+	}
 }
 
-while(1){
-	sleep(5 * 60);
+sub work{
+	print "DEBUG\n";
 	
 	$i = 0;
 	foreach my $track (@tracks){
@@ -123,5 +127,8 @@ while(1){
 	}
 	
 }
+
+init();
+$bot->Start();
 
 $bot->Disconnect;
