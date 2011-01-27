@@ -69,7 +69,8 @@ sub parse_russian_post{
 	return @data;
 }
 
-sub new_bot_message{};
+sub init;
+sub new_bot_message;
 
 my %forum_list = ();
 
@@ -81,11 +82,16 @@ my $bot = Net::Jabber::Bot->new(
 	password => '',
 	alias => 'parcelbot',
 	safety_mode => 1,
-	loop_sleep_time => 60,
+	loop_sleep_time => 5 * 60,
 	message_function => \&new_bot_message,
 	background_function => \&work,
 	forums_and_responses => \%forum_list ,
 );
+
+sub new_bot_message{
+	$bot->SendPersonalMessage('filejunkie@filejunkie.name', "Wait a sec...\n");
+	init;
+}
 
 $bot->AddUser('filejunkie@filejunkie.name');
 my (@sent, $i);
@@ -108,8 +114,6 @@ sub init{
 }
 
 sub work{
-	print "DEBUG\n";
-	
 	$i = 0;
 	foreach my $track (@tracks){
 		my @data = parse_russian_post($track);
