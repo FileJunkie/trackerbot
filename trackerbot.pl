@@ -61,7 +61,10 @@ sub parse_russian_post{
 	my @data = ();
 	foreach my $row (@rows){
 		my @cells = $row->look_down("_tag", "td");
-		$data[@data] = $cells[1]->as_text . "\t" . $cells[0]->as_text . "\t" . $cells[3]->as_text;
+		$data[@data] = $cells[1]->as_text . "\t" . $cells[0]->as_text;
+		for(my $i = 2; $i < scalar(@cells); $i++){
+			$data[@data - 1] .= "\t" . $cells[$i]->as_text;
+		}
 	}
 	
 	$tree->delete;
