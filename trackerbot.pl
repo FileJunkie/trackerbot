@@ -22,7 +22,7 @@ sub parse_russian_post{
 	my $track = $_[0];
 	
 	my $ua = LWP::UserAgent->new;
-	my $req = POST 'http://info.russianpost.ru/servlet/post_item',
+	my $req = POST 'http://info.russianpost.ru/servlet/track_post_item',
 		[ action => 'search', searchType => 'barCode', show_form => 'yes', barCode => $track ];
 
 	my $tree = HTML::TreeBuilder->new;
